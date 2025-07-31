@@ -1,9 +1,69 @@
 #classes.py
 
+class Statistics:
+    def __init__(self):
+        self.total_messages = 0
+        self.users = UserList()
+
+    def add_message(self, sender):
+        self.total_messages += 1
+        self.users.add_or_increment(sender)
+
+    def display_statistics(self):
+        print(f"Total Messages: {self.total_messages}")
+        
+        # display users with indented message counts
+        current = self.users.head
+        while current:
+            print(f"    {current.name}: {current.message_count} messages")
+            current = current.next
+
+        # build and print user list summary
+        user_names = []
+        current = self.users.head
+        while current:
+            user_names.append(f"'{current.name}'")
+            current = current.next
+        print(f"Total Users: {self.users.total_users()}, {', '.join(user_names)}")
+
+
 class User:
     def __init__(self, name):
         self.name = str(name)
+        self.message_count = 0
         self.next = None
+
+class UserList:
+    def __init__(self):
+        self.head = None
+
+    def add_or_increment(self, sender):
+        # check if sender already exists
+        current = self.head
+        while current:
+            if current.name == sender:
+                current.message_count += 1
+                return
+            current = current.next
+        
+        # if not found, add new user node
+        new_user = User(sender)
+        new_user.next = self.head
+        self.head = new_user
+
+    def total_users(self):
+        count = 0
+        current = self.head
+        while current:
+            count += 1
+            current = current.next
+        return count
+
+    def display(self):
+        current = self.head
+        while current:
+            print(f"{current.name}: {current.message_count} messages")
+            current = current.next
 
 class Message:
     def __init__(self, date, time, sender, content):
@@ -16,6 +76,7 @@ class Message:
 class Chat:
     def __init__(self):
         self.head = None
+        self.statistics = Statistics()
 
     def add_message(self, date, time, sender, content):
         new_message = Message(date, time, sender, content)
@@ -56,8 +117,9 @@ class Chat:
                 match = pattern.match(line)
                 if match:
                     date, time, sender, content = match.groups()
+                    self.statistics.add_message(sender)
                     self.add_message(date, time, sender, content)
-                    if "Messages and calls are end-to-end encrypted" in content or "sticker omitted" in content:
+                    if "Messages and calls are end-to-end encrypted" in content or "sticker omitted" in content or "image omitted" in content:
                         continue
                     last_message = self.head
                     while last_message.next:
@@ -86,20 +148,3 @@ class Chat:
         else:
             return file_path
         
-    def add_user(self, name):
-        new_user = User(name)
-        if not self.head:
-            self.head = new_user
-            return
-        current = self.head
-        while current.next:
-            current = current.next
-        current.next = new_user
-    
-    def check_user(self, name):
-        current = self.head
-        while current:
-            if current.name == name:
-                return True
-            current = current.next
-        return False
