@@ -96,26 +96,45 @@ class Chat:
                 current = current.next
 
     def import_from_whatsapp(self, file_path):
+        import re
+        import sys
+        import time
+
         if not file_path:
             print("No file path provided.")
             return
-        
-        import re
+
         pattern = re.compile(r'^\[(\d{1,2}\.\d{1,2}\.\d{4}), (\d{2}:\d{2}:\d{2})\] ([^:]+): (.*)')
 
-        with open(file_path, 'r', encoding='utf-8') as file:
+        try:
+            # First, get total line count (to create a loading bar based on %)
+            with open(file_path, 'r', encoding='utf-8') as file:
+                lines = file.readlines()
+
+            total = len(lines)
+            progress = 0
+            bar_length = 50  # length of the bar in characters
             last_message = None
-            for line in file:
+
+            print("Importing chat:")
+
+            for i, line in enumerate(lines):
                 line = line.strip()
                 if not line:
                     continue
-                
+
                 match = pattern.match(line)
                 if match:
-                    date, time, sender, content = match.groups()
+                    date, time_str, sender, content = match.groups()
                     self.statistics.add_message(sender)
-                    self.add_message(date, time, sender, content)
-                    if "Messages and calls are end-to-end encrypted" in content or "sticker omitted" in content or "image omitted" in content:
+                    self.add_message(date, time_str, sender, content)
+                    #sticker, image, video falan countlarını da sayıp onları da göstermek lazım user başına
+                    if "Messages and calls are end-to-end encrypted" in content or \
+                    "sticker omitted" in content or \
+                    "image omitted" in content or \
+                    "video omitted" in content or \
+                    "audio omitted" in content or \
+                    "document omitted" in content:
                         continue
                     last_message = self.head
                     while last_message.next:
@@ -123,6 +142,18 @@ class Chat:
                 else:
                     if last_message:
                         last_message.content += "\n" + line
+
+                # Update loading bar
+                progress = int((i + 1) / total * bar_length)
+                bar = "[" + "#" * progress + "-" * (bar_length - progress) + "]"
+                sys.stdout.write(f"\r{bar} {int((i + 1) / total * 100)}%")
+                sys.stdout.flush()
+
+            print("\nImport complete.")
+
+        except FileNotFoundError:
+            print(f"File not found: {file_path}")
+
     
     def get_file_directory(self):
         
