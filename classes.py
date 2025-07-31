@@ -12,13 +12,11 @@ class Statistics:
     def display_statistics(self):
         print(f"Total Messages: {self.total_messages}")
         
-        # display users with indented message counts
         current = self.users.head
         while current:
             print(f"    {current.name}: {current.message_count} messages")
             current = current.next
 
-        # build and print user list summary
         user_names = []
         current = self.users.head
         while current:
@@ -38,7 +36,6 @@ class UserList:
         self.head = None
 
     def add_or_increment(self, sender):
-        # check if sender already exists
         current = self.head
         while current:
             if current.name == sender:
@@ -46,7 +43,6 @@ class UserList:
                 return
             current = current.next
         
-        # if not found, add new user node
         new_user = User(sender)
         new_user.next = self.head
         self.head = new_user
@@ -125,7 +121,6 @@ class Chat:
                     while last_message.next:
                         last_message = last_message.next
                 else:
-                    # if it's a continuation of the previous message (multi-line message)
                     if last_message:
                         last_message.content += "\n" + line
     
@@ -136,7 +131,7 @@ class Chat:
         from tkinter import filedialog
 
         root = tk.Tk()
-        root.withdraw() # Hide the root window
+        root.withdraw()
         file_path = filedialog.askopenfilename(
             title="Select WhatsApp Chat File",
             filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")]
