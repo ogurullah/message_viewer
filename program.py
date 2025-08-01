@@ -19,12 +19,15 @@ if __name__ == "__main__":
             chat = Chat()
             print(".",)
             print("Program initialized successfully!")
-            print("Please select the .txt file you exported from Whatsapp in the following file explorer window", end="")
-            for i in range(3):  #change it so that window appears on user input, not automatically
-                time.sleep(1)
-                print(".", end="", flush=True)
+            select_chat = 0
+            print("Type 1 to select a .txt file to import.")
+            while select_chat != "1":
+                select_chat = input()
+                if select_chat != "1":
+                    print("Invalid input. Please type '1' to select a .txt file.")
+                    select_chat = 0
+            print("\nFile explorer window opened!")
             file_directory = chat.get_file_directory()
-            print("\nFile explorer window opened!") #this shows after the file explorer window is opened, fix it
             if file_directory:
                 print(f"Selected file: {file_directory}")
                 print("This may take a while depending on the size of your chat file.")
