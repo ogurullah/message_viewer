@@ -27,6 +27,7 @@ def main():
             return
 
     elif choice == "2":
+        #this doesnt work yet, but it will load a saved chat from a JSON file
         chat = Chat.from_json()
         if chat:
             print("Chat loaded successfully from file.")

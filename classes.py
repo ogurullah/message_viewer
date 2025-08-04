@@ -164,9 +164,9 @@ class Chat:
 
         messages = []
         current = self.head
-        unique_senders = []
+        first_sender = None
 
-        # Collect messages and extract first two unique sender names
+        # Collect messages and get the first sender name
         while current:
             messages.append({
                 "date": current.date,
@@ -175,32 +175,17 @@ class Chat:
                 "content": current.content
             })
 
-            if current.sender not in unique_senders:
-                unique_senders.append(current.sender)
-                if len(unique_senders) == 2:
-                    break  # stop early when we have two
+            if first_sender is None:
+                first_sender = current.sender
 
             current = current.next
 
-        # Continue gathering all messages
-        current = self.head
-        while len(messages) < self.statistics.total_messages and current:
-            current = current.next
-            if current:
-                messages.append({
-                    "date": current.date,
-                    "time": current.time,
-                    "sender": current.sender,
-                    "content": current.content
-                })
-
-        # Sanitize sender names for filenames
+        # Sanitize the first sender's name for filename
         def sanitize(name):
-            return re.sub(r'[^a-zA-Z0-9_-]', '_', name.strip())[:20]  # limit length if needed
+            return re.sub(r'[^a-zA-Z0-9_-]', '_', name.strip())[:20] if name else "user"
 
-        sender1 = sanitize(unique_senders[0]) if len(unique_senders) > 0 else "user1"
-        sender2 = sanitize(unique_senders[1]) if len(unique_senders) > 1 else "user2"
-        filename = f"chat_{sender1}_{sender2}.json"
+        sender_name = sanitize(first_sender)
+        filename = f"chat_{sender_name}.json"
 
         users = []
         current = self.statistics.users.head
@@ -225,6 +210,7 @@ class Chat:
             print(f"Chat data saved to '{filename}'")
         except Exception as e:
             print(f"Error saving chat data: {e}")
+
 
     
     @classmethod
