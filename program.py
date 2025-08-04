@@ -1,64 +1,62 @@
-# program.py
-
 from classes import Chat
+import time
+
+def main():
+    print("Welcome to the Whatsapp Chat Viewer!")
+
+    print("1. Import new .txt file")
+    print("2. Load from saved .json")
+    choice = input("Enter your choice (1/2): ").strip()
+
+    chat = None
+    if choice == "1":
+        chat = Chat()
+        print("Opening file explorer...")
+        file_directory = chat.get_file_directory()
+        if not file_directory:
+            print("No file selected. Exiting.")
+            return
+
+        print(f"Selected file: {file_directory}")
+        confirm = input("Do you want to import now? (yes/no): ").lower().strip()
+        if confirm == "yes":
+            chat.import_from_whatsapp(file_directory)
+            print("Chat imported successfully.")
+        else:
+            print("Import canceled. Exiting.")
+            return
+
+    elif choice == "2":
+        chat = Chat.from_json()
+        if chat:
+            print("Chat loaded successfully from file.")
+        else:
+            print("Failed to load chat. Exiting.")
+            return
+    else:
+        print("Invalid input. Exiting.")
+        return
+
+    while True:
+        print("\nWhat would you like to do?")
+        print("1. Display chat messages")
+        print("2. Display user statistics")
+        print("3. Export chat to file")
+        print("4. Exit the program")
+        action = input("Enter your choice (1/2/3/4): ").strip()
+
+        if action == "1":
+            show_details = input("Do you want to see message details? (yes/no): ").lower().strip() == "yes"
+            chat.display_chat(show_details)
+        elif action == "2":
+            chat.statistics.display_statistics()
+        elif action == "3":
+            chat.save_to_file()
+        elif action == "4":
+            print("Exiting the program. Thank you for using Whatsapp Chat Viewer!")
+            break
+        else:
+            print("Invalid input. Please try again.")
 
 if __name__ == "__main__":
-    print("Welcome to the Whatsapp Chat Viewer!")
-    should_exit = False
-    while not should_exit:
-        user_input = input("Press 1 to initialize the program. Press 0 to exit.")
-        if user_input == "0":
-            should_exit = True
-        elif user_input != "1":
-            print("Invalid input. Please try again.")
-            user_input = input()
-        elif user_input == "1":
-            print("Initializing the program.", end="")
-            import time
-            print(".", end="")
-            chat = Chat()
-            print(".",)
-            print("Program initialized successfully!")
-            select_chat = 0
-            print("Type 1 to select a .txt file to import.")
-            while select_chat != "1":
-                select_chat = input()
-                if select_chat != "1":
-                    print("Invalid input. Please type '1' to select a .txt file.")
-                    select_chat = 0
-            print("\nFile explorer window opened!")
-            file_directory = chat.get_file_directory()
-            if file_directory:
-                print(f"Selected file: {file_directory}")
-                print("This may take a while depending on the size of your chat file.")
-                start = "no"
-                while start != "yes":
-                    start = input("Do you want to import now? Type 'yes' to start, 'no' to wait or 'exit' to quit: ").lower()
-                    if start == "yes":
-                        chat.import_from_whatsapp(file_directory)
-                    elif start == "no":
-                        print("Okay. You can type 'yes' when you're ready or 'exit' to quit.")
-                        continue
-                    elif start == "exit":
-                        print("Exiting the program.")
-                        should_exit = True
-                        break
-                    else:
-                        print("Invalid input. Please type 'yes', 'no' or 'exit'.")
-                while not should_exit:
-                    print("\nWhat would you like to do?")
-                    print("1. Display chat messages")
-                    print("2. Display user statistics")
-                    print("3. Exit the program")
-                    choice = input("Enter your choice (1/2/3): ")
-                    if choice == "1":
-                        show_details = input("Do you want to see message details? (yes/no): ").lower() == "yes"
-                        chat.display_chat(show_details)
-                    elif choice == "2":
-                        chat.statistics.display_statistics()
-                    elif choice == "3":
-                        should_exit = True
-                    else:
-                        print("Invalid choice. Please try again.")
-    print("Exiting the program. Thank you for using Whatsapp Chat Viewer!")
-
+    main()

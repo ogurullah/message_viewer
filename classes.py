@@ -153,7 +153,104 @@ class Chat:
 
         except FileNotFoundError:
             print(f"File not found: {file_path}")
+    
+    def save_to_file(self):
+        import json
+        import re
 
+        if not json:
+            print("JSON module is not available.")
+            return
+
+        messages = []
+        current = self.head
+        unique_senders = []
+
+        # Collect messages and extract first two unique sender names
+        while current:
+            messages.append({
+                "date": current.date,
+                "time": current.time,
+                "sender": current.sender,
+                "content": current.content
+            })
+
+            if current.sender not in unique_senders:
+                unique_senders.append(current.sender)
+                if len(unique_senders) == 2:
+                    break  # stop early when we have two
+
+            current = current.next
+
+        # Continue gathering all messages
+        current = self.head
+        while len(messages) < self.statistics.total_messages and current:
+            current = current.next
+            if current:
+                messages.append({
+                    "date": current.date,
+                    "time": current.time,
+                    "sender": current.sender,
+                    "content": current.content
+                })
+
+        # Sanitize sender names for filenames
+        def sanitize(name):
+            return re.sub(r'[^a-zA-Z0-9_-]', '_', name.strip())[:20]  # limit length if needed
+
+        sender1 = sanitize(unique_senders[0]) if len(unique_senders) > 0 else "user1"
+        sender2 = sanitize(unique_senders[1]) if len(unique_senders) > 1 else "user2"
+        filename = f"chat_{sender1}_{sender2}.json"
+
+        users = []
+        current = self.statistics.users.head
+        while current:
+            users.append({
+                "name": current.name,
+                "message_count": current.message_count
+            })
+            current = current.next
+
+        data = {
+            "messages": messages,
+            "statistics": {
+                "total_messages": self.statistics.total_messages,
+                "users": users
+            }
+        }
+
+        try:
+            with open(filename, "w", encoding="utf-8") as f:
+                json.dump(data, f, ensure_ascii=False, indent=2)
+            print(f"Chat data saved to '{filename}'")
+        except Exception as e:
+            print(f"Error saving chat data: {e}")
+
+    
+    @classmethod
+    def from_json(cls, filename="chat_data.json"):
+        import json
+        try:
+            with open(filename, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except Exception as e:
+            print(f"Error reading file: {e}")
+            return None
+
+        chat = cls()
+
+        for msg in data.get("messages", []):
+            chat.add_message(msg["date"], msg["time"], msg["sender"], msg["content"])
+
+        for user in data.get("statistics", {}).get("users", []):
+            chat.statistics.users.add_or_increment(user["name"])
+            current = chat.statistics.users.head
+            if current.name == user["name"]:
+                current.message_count = user["message_count"]
+
+        chat.statistics.total_messages = data.get("statistics", {}).get("total_messages", 0)
+
+        return chat
     
     def get_file_directory(self):
         
